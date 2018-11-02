@@ -911,6 +911,7 @@ static int m88e1510_phy_writebits(struct phy_device *phydev,
 static int m88e1510_config_init(struct phy_device *phydev)
 {
 	int err;
+	int temp;
 
 	/* As per Marvell Release Notes - Alaska 88E1510/88E1518/88E1512
 	 * /88E1514 Rev A0, Errata Section 3.1
@@ -971,6 +972,19 @@ static int m88e1510_config_init(struct phy_device *phydev)
 		err = m88e1510_phy_writebits(phydev,
 					     MII_88E1510_PHY_GENERAL_CTRL_1,
 					     15, 1, 1);
+		if (err < 0)
+			return err;
+
+		err = phy_write(phydev, MII_MARVELL_PHY_PAGE, MII_88E1121_PHY_LED_PAGE);
+		if (err < 0)
+			return err;
+
+		temp = phy_read(phydev, MII_88E1121_PHY_LED_CTRL + 1);
+		if (temp < 0)
+			return temp;
+		temp &= ~0xF;
+		temp |= 0xA;
+		err = phy_write(phydev, MII_88E1121_PHY_LED_CTRL + 1, temp);
 		if (err < 0)
 			return err;
 
